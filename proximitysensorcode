@@ -1,0 +1,87 @@
+// proximity sensor
+// Tgst hassan shettima lawan contact me on;
+// hassanshettima705@gmail.com +2347062769748 +2348183555452
+
+
+
+const int buzzerPin = 8;               // buzzzer signal pin attached to digital pin 8
+const int trigPin = 11;               // ultrasonic triggerPin connected to digital pin 11
+const int echoPin = 10;               // ultrasonic echoPin connected to digital pin 10
+int ledPin = 13;                      // LED positive connecteed to digital pin 13 (no need for resistor)
+long duration;
+float distanceMeters, distanceCm, distanceInch;
+
+void setup() {                        // define all digital and analog pins
+  pinMode(13, OUTPUT);                // LED pin as output
+  pinMode(trigPin, OUTPUT);           // trigger pin as output because it sends signal
+  pinMode(8, OUTPUT);                 // buzzer pin as output
+  pinMode(echoPin, INPUT);             // echo pin as input becaue it recievs signals
+  Serial.begin(9600);                  // initiate serial communication
+}
+
+void loop() {
+  digitalWrite(trigPin, HIGH);                // initiate the ultrasonic sensor for sending and receiving
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+
+  duration = pulseIn(echoPin, HIGH);
+
+  distanceMeters = duration * 0.00034 / 2;      // speed of sound per second; divide by 2 due to then sound coming back to the echo part of the sensor
+  distanceCm = duration * 0.034 / 2;
+  distanceInch = duration * 0.0133 / 2;
+/*
+  Serial.print("Distance: ");                     // print distance (meters) in serial monitor
+  Serial.print(distanceMeters);
+  Serial.println("  Meters");
+  delay(300);
+
+  Serial.print("Distance: ");                      // print distance (centi meters) in serial monitor
+  Serial.print(distanceCm);
+  Serial.println("  cm");
+  delay(300);
+
+  Serial.print("Distance: ");                        // print distance (inches) in serial monitor
+  Serial.print(distanceInch);
+  Serial.println("  inch");
+  delay(300);
+  Serial.println("----------------------------");     // seoeration
+*/  if (distanceCm <= 30 )    {                           // if distance is greater than or equal to 30 cm on LED and on buzzer ON and OFF
+    digitalWrite(13, HIGH);                                 // ...... with delay as interval
+    tone(buzzerPin, 1200);
+    delay(100);                                                 //   u can tweak the code to suit yourn needs
+    noTone(buzzerPin);
+    digitalWrite(13, LOW);
+    delay(5);
+  }
+  else if (distanceCm > 30 &&  distanceCm <=60 )    {
+    //digitalWrite(13, LOW);
+    //noTone(buzzerPin);
+    digitalWrite(13, HIGH);                                 // ...... with delay as interval
+    tone(buzzerPin, 800);
+    delay(100);                                                 //   u can tweak the code to suit yourn needs
+    noTone(buzzerPin);
+    digitalWrite(13, LOW);
+    delay(5);
+  }
+  else if (distanceCm > 60 &&  distanceCm <=90 )    {
+    //digitalWrite(13, LOW);
+    //noTone(buzzerPin);
+    digitalWrite(13, HIGH);                                 // ...... with delay as interval
+    tone(buzzerPin, 600);
+    delay(100);                                                 //   u can tweak the code to suit yourn needs
+    noTone(buzzerPin);
+    digitalWrite(13, LOW);
+    delay(5);
+  }
+  else if (distanceCm > 90 &&  distanceCm <=120 )    {
+    //digitalWrite(13, LOW);
+    //noTone(buzzerPin);
+    digitalWrite(13, HIGH);                                 // ...... with delay as interval
+    tone(buzzerPin, 500);
+    delay(100);                                                 //   u can tweak the code to suit yourn needs
+    noTone(buzzerPin);
+    digitalWrite(13, LOW);
+    delay(5);
+  }
+  
+}

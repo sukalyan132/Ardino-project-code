@@ -1,0 +1,96 @@
+
+#include <ESP8266WiFi.h>
+#include <ArduinoJson.h>          //https://github.com/bblanchon/ArduinoJson (use v6.xx)
+#include <ESP8266AWSIoTMQTTWS.h>  //https://github.com/debsahu/esp8266-arduino-aws-iot-ws
+                                  //https://github.com/Links2004/arduinoWebSockets
+                                  //https://projects.eclipse.org/projects/technology.paho/downloads (download Arduino version)
+                 
+#include "DHT.h"        // including the library of DHT11 temperature and humidity sensor
+#define DHTTYPE DHT11   // DHT 11
+
+#define dht_dpin 0
+DHT dht(dht_dpin, DHTTYPE); 
+
+const char *ssid = "Airtel-MW40-33EA";
+const char *password = "73998561";
+
+// See `src/aws_iot_config.h` for formatting
+char *region = (char *) "us-west-2";
+char *endpoint = (char *) "aer87615iwycy";
+char *mqttHost = (char *) "aer87615iwycy-ats.iot.us-west-2.amazonaws.com";
+int mqttPort = 443;
+char *iamKeyId = (char *) "AKIAJLKWADGGIIXGYCJA";
+char *iamSecretKey = (char *) "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";
+const char* aws_topic  = "$aws/things/circuitdigest/shadow/update";
+
+#if !(ARDUINOJSON_VERSION_MAJOR == 6 and ARDUINOJSON_VERSION_MINOR == 5)
+  #error "Install ArduinoJson v6.5.0-beta"
+#endif
+
+ESP8266DateTimeProvider dtp;
+AwsIotSigv4 sigv4(&dtp, region, endpoint, mqttHost, mqttPort, iamKeyId, iamSecretKey);
+AWSConnectionParams cp(sigv4);
+AWSWebSocketClientAdapter adapter(cp);
+AWSMqttClient client(adapter, cp);
+
+void setup() {
+
+    Serial.begin(115200);
+    while(!Serial) {
+        yield();
+    }
+
+    WiFi.begin(ssid, password);
+    while (WiFi.status() != WL_CONNECTED) {
+      delay(500);
+      Serial.print(".");
+    }
+
+    int res = client.connect();
+    Serial.printf("mqtt connect=%d\n", res);
+
+    if (res == 0) {
+      client.subscribe(aws_topic, 1,
+        [](const char* topic, const char* msg)
+        { Serial.printf("Got msg '%s' on topic %s\n", msg, topic); }
+      );
+    }
+    dht.begin();
+    Serial.println("Humidity and temperature\n\n");
+    delay(700);
+}
+
+void loop() {
+    float h = dht.readHumidity();
+    float t = dht.readTemperature();         
+    Serial.print("Current humidity = ");
+    Serial.print(h);
+    Serial.print("%  ");
+    Serial.print("temperature = ");
+    Serial.print(t); 
+    Serial.println("C  ");
+  if (client.isConnected()) {
+    DynamicJsonDocument jsonBuffer;
+    JsonObject root = jsonBuffer.to<JsonObject>();
+    //JsonObject state = root.createNestedObject("state");
+    root["Current humidity"]=h;
+    root["Current temperature"]=t;
+    //JsonObject humidity_reported = state.createNestedObject("Current humidity":h);
+    //humidity_reported["value"] = h+"%  ";
+    //JsonObject temperature_reported = state.createNestedObject("temperature":t);
+    //temperature_reported["value"] = t+"C  ";
+    serializeJson(root, Serial);
+    Serial.println();
+    char shadow[measureJson(root) + 1];
+    serializeJson(root, shadow, sizeof(shadow));
+
+    client.publish(aws_topic, shadow, 0, false);
+    client.yield();
+
+  } else {
+    Serial.println("Not connected...");
+    delay(2000);
+  }
+
+  delay(30000);
+}
