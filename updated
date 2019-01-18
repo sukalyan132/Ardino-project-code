@@ -11,17 +11,17 @@
 #define dht_dpin 0
 DHT dht(dht_dpin, DHTTYPE); 
 
-const char *ssid = "Airtel-MW40-33EA";
-const char *password = "73998561";
+const char *ssid = "*******";
+const char *password = "********";
 
 // See `src/aws_iot_config.h` for formatting
-char *region = (char *) "us-west-2";
-char *endpoint = (char *) "aer87615iwycy";
-char *mqttHost = (char *) "aer87615iwycy-ats.iot.us-west-2.amazonaws.com";
+char *region = (char *) "********";
+char *endpoint = (char *) "*********";
+char *mqttHost = (char *) "*********-ats.iot.us-west-1.amazonaws.com";
 int mqttPort = 443;
-char *iamKeyId = (char *) "AKIAJLKWADGGIIXGYCJA";
-char *iamSecretKey = (char *) "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";
-const char* aws_topic  = "$aws/things/circuitdigest/shadow/update";
+char *iamKeyId = (char *) "*********";
+char *iamSecretKey = (char *) "************";
+const char* aws_topic  = "$aws/things/*******/shadow/update";
 
 #if !(ARDUINOJSON_VERSION_MAJOR == 6 and ARDUINOJSON_VERSION_MINOR == 5)
   #error "Install ArduinoJson v6.5.0-beta"
